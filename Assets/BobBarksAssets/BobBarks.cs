@@ -537,7 +537,7 @@ public class BobBarks : MonoBehaviour
 	// Twitch Plays Support
 	// -----
 #pragma warning disable 414
-	private readonly string TwitchManualCode = "https://ktane.qute.dog/manuals/Bob%20Barks.html";
+	//private readonly string TwitchManualCode = "https://ktane.qute.dog/manuals/Bob%20Barks.html";
 	private readonly string TwitchHelpMessage = @"Use '!{0} TL TR BL BR' (position) or '!{0} 1 2 3 4' (reading order) to press the buttons. Use '!{0} shut up' to silence until another input is given.";
 #pragma warning restore 414
 
