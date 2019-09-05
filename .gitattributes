@@ -1,0 +1,6 @@
+# All manual data that ISN'T the HTML manual should be considered vendored.
+Manual/* linguist-vendored
+Manual/*.html linguist-vendored=false
+
+# Everything in BaseAssets should be considered vendored.
+Assets/BaseAssets/* linguist-vendored
