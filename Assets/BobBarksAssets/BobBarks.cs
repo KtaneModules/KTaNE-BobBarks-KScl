@@ -538,16 +538,14 @@ public class BobBarks : MonoBehaviour
 	// -----
 #pragma warning disable 414
 	//private readonly string TwitchManualCode = "https://ktane.qute.dog/manuals/Bob%20Barks.html";
-	private readonly string TwitchHelpMessage = @"Use '!{0} TL TR BL BR' (position) or '!{0} 1 2 3 4' (reading order) to press the buttons. Use '!{0} shut up' to silence until another input is given.";
+	private readonly string TwitchHelpMessage = @"Use '!{0} TL TR BL BR' (position) or '!{0} 1 2 3 4' (reading order) to press the buttons. Use '!{0} mute' to silence until another input is given.";
 #pragma warning restore 414
 
 	public IEnumerator ProcessTwitchCommand(string command)
 	{
 		// TP only silence command
-		if (Regex.IsMatch(command, @"^\s*(silence|shut.*up|be\s*quiet)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+		if (Regex.IsMatch(command, @"^\s*(silence|shut.*up|be\s*quiet|mute)\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
 		{
-			Debug.LogFormat("[Bob Barks #{0}] Received Twitch Plays command to silence SFX.", thisLogID);
-
 			yield return null;
 			soundAllowed = false;
 			yield break;
@@ -583,28 +581,31 @@ public class BobBarks : MonoBehaviour
 		if (presses.Count > 0)
 		{
 			yield return null;
-			KMSelectable[] pressArray = presses.ToArray();
-			Debug.LogFormat("[Bob Barks #{0}] Received Twitch Plays command to press {1} buttons.", thisLogID, pressArray.Length);
-			yield return pressArray;
+			yield return presses.ToArray();
 
 			// If module is in solve animation after pressing, then return "solve" so the solver gets proper credit
 			if (moduleSolved)
-			{
-				Debug.LogFormat("[Bob Barks #{0}] Yielding solve to the TP handler because the solving animation is playing.", thisLogID);
 				yield return "solve";
-			}
 		}
 		yield break;
 	}
 
-	void TwitchHandleForcedSolve()
+	public IEnumerator TwitchHandleForcedSolve()
 	{
 		if (moduleSolved)
-			return;
+			yield break;
+		Debug.LogFormat("[Bob Barks #{0}] Force solve requested by Twitch Plays.", thisLogID);
 
-		Debug.LogFormat("[Bob Barks #{0}] SOLVE: Force solve requested by Twitch Plays.", thisLogID);
-		moduleSolved = true;
-		StopCoroutine(showCoroutine);
-		showCoroutine = StartCoroutine(SolveAnimation());
+		// If the module isn't initialized yet, wait.
+		while (correct[0] == -1)
+			yield return true;
+		while (!moduleSolved)
+		{
+			// Just keep pressing the correct button for our position in the sequence until it solves.
+			buttonCels[correct[positionInCurrentStage]].OnInteract();
+			yield return new WaitForSeconds(0.1f);
+		}
+		// Due to EnsureSolve(), wait for the solving animation
+		yield return new WaitForSeconds(1.0f);
 	}
 }
